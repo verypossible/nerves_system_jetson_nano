@@ -1,0 +1,26 @@
+From bae24bbd89347322534dc1ff6635701fa34609fb Mon Sep 17 00:00:00 2001
+From: Matt Madison <matt@madison.systems>
+Date: Thu, 30 Jul 2020 13:23:11 -0700
+Subject: [PATCH] configs/p3450-0000.h: remove redefinition of
+ CONFIG_ENV_OFFSET
+
+Signed-off-by: Matt Madison <matt@madison.systems>
+---
+ include/configs/p3450-0000.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/include/configs/p3450-0000.h b/include/configs/p3450-0000.h
+index eff463eecb..2457b6f8ac 100644
+--- a/include/configs/p3450-0000.h
++++ b/include/configs/p3450-0000.h
+@@ -21,7 +21,6 @@
+ 	func(DHCP, dhcp, na)
+ #define CONFIG_SYS_MMC_ENV_DEV		0
+ #define CONFIG_SYS_MMC_ENV_PART		2
+-#define CONFIG_ENV_OFFSET		(-CONFIG_ENV_SIZE)
+ #define DEFAULT_MMC_DEV			"0"
+ #else
+ /* High-level configuration options */
+-- 
+2.25.1
+

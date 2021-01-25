@@ -1,0 +1,50 @@
+From 43c9a14da0c2f0214623291904d14b2496280c7b Mon Sep 17 00:00:00 2001
+From: Tom Warren <twarren@nvidia.com>
+Date: Tue, 5 Mar 2019 15:27:14 -0700
+Subject: [PATCH] ARM: tegra: Added fdt_copy_env_ calls to ft_system_setup
+
+On Porg, we'll be adding fdt_copy_ env vars to allow the DTB from
+CBoot in RAM to be merged with a kernel DTB loaded from disk.
+These two functions will parse the environment strings to find
+nodes and properties to add to the kernel DTB before giving it to
+the L4T kernel on boot. Currently there are no fdt_copy params
+defined for any board, they will be added later based on an ABI
+of protected nodes and properties that's being defined.
+
+Bug 2481530
+
+Change-Id: I5f5a2c79e5c30f9d98368a16c55676c8a5264dcf
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Reviewed-on: https://git-master.nvidia.com/r/2033251
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+GVS: Gerrit_Virtual_Submit
+Reviewed-by: mobile promotions <svcmobile_promotions@nvidia.com>
+Tested-by: mobile promotions <svcmobile_promotions@nvidia.com>
+---
+ arch/arm/mach-tegra/dt-setup.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-tegra/dt-setup.c b/arch/arm/mach-tegra/dt-setup.c
+index 06dee0146d..7dc235f7bf 100644
+--- a/arch/arm/mach-tegra/dt-setup.c
++++ b/arch/arm/mach-tegra/dt-setup.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+- * Copyright (c) 2010-2016, NVIDIA CORPORATION.
++ * Copyright (c) 2010-2019, NVIDIA CORPORATION.
+  */
+ 
+ #include <common.h>
+@@ -32,6 +32,8 @@ int ft_system_setup(void *blob, struct bd_info *bd)
+ 
+   fdt_del_env_nodelist(blob);
+   fdt_del_env_proplist(blob);
++  fdt_copy_env_nodelist(blob);
++  fdt_copy_env_proplist(blob);
+ 
+ 	return 0;
+ }
+-- 
+2.25.1
+

@@ -1,0 +1,55 @@
+From f5c2350f419c2977b33cd39ad0e79e61a7d23fb1 Mon Sep 17 00:00:00 2001
+From: Tom Warren <twarren@nvidia.com>
+Date: Mon, 24 Feb 2020 14:08:05 -0700
+Subject: [PATCH] ARM: Tegra: Allow 128MB for kernel size in calculated env
+ vars
+
+Large kernels, like those created w/GCOV, can potentially be up to 120MB
+in size, according to the kernel team. Change kernel_addr_r_size to
+0x08000000 to allow for that. This will prevent large kernels from
+overwriting/corrupting the FDT in RAM when loading DTBs specified in the
+extlinux.conf file.
+
+Bug 2832394
+
+Change-Id: I3963a57248c57fc9c45bf2ef83dc2aa47276019e
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Reviewed-on: https://git-master.nvidia.com/r/c/3rdparty/u-boot/+/2302030
+(cherry picked from commit 41bbe21a3aff9d7b8ad63a1b92e86520cb3a307b)
+Reviewed-on: https://git-master.nvidia.com/r/c/3rdparty/u-boot/+/2304778
+Reviewed-by: Amulya Yarlagadda <ayarlagadda@nvidia.com>
+GVS: Gerrit_Virtual_Submit
+---
+ include/configs/tegra186-common.h | 2 +-
+ include/configs/tegra210-common.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/configs/tegra186-common.h b/include/configs/tegra186-common.h
+index 56156268a6..c630faf27b 100644
+--- a/include/configs/tegra186-common.h
++++ b/include/configs/tegra186-common.h
+@@ -61,7 +61,7 @@
+ 		"ramdisk_addr_r\0" \
+ 	"kernel_addr_r_align=00200000\0" \
+ 	"kernel_addr_r_offset=00080000\0" \
+-	"kernel_addr_r_size=03000000\0" \
++	"kernel_addr_r_size=08000000\0" \
+ 	"kernel_addr_r_aliases=loadaddr\0" \
+ 	"fdt_addr_r_align=00200000\0" \
+ 	"fdt_addr_r_offset=00000000\0" \
+diff --git a/include/configs/tegra210-common.h b/include/configs/tegra210-common.h
+index 5d38a52c02..37ccfd8982 100644
+--- a/include/configs/tegra210-common.h
++++ b/include/configs/tegra210-common.h
+@@ -52,7 +52,7 @@
+ 		"ramdisk_addr_r\0" \
+ 	"kernel_addr_r_align=00200000\0" \
+ 	"kernel_addr_r_offset=00080000\0" \
+-	"kernel_addr_r_size=03000000\0" \
++	"kernel_addr_r_size=08000000\0" \
+ 	"kernel_addr_r_aliases=loadaddr\0" \
+ 	"fdt_addr_r_align=00200000\0" \
+ 	"fdt_addr_r_offset=00000000\0" \
+-- 
+2.25.1
+

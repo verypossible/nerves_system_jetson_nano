@@ -1,0 +1,119 @@
+From 26727971caa1e8de888991d7e074daacfb8f2b54 Mon Sep 17 00:00:00 2001
+From: Matt Madison <matt@madison.systems>
+Date: Sat, 11 Jul 2020 08:02:47 -0700
+Subject: [PATCH] configs: tegra: align env size/offset definitions with
+ R32.4.3
+
+In L4T R32.4.3, NVIDIA's U-Boot fork and flash layout definition
+files define an area in the SPI flash or eMMC boot block for
+the environment block to be stored.  Update the defconfig files
+to match those definitions.
+
+The offset is 0x3D8000 (0x28000 from end). (Note that in the
+flash layout files, the <start_location> is 0x7D8000 because
+the XML file covers both boot blocks.)
+
+The size is 32768 (0x8000) bytes.
+
+These definitions are identical for all of the U-Boot-based
+Jetsons.
+
+Signed-off-by: Matt Madison <matt@madison.systems>
+---
+ configs/p2371-2180_defconfig     | 4 ++--
+ configs/p2771-0000-000_defconfig | 4 ++--
+ configs/p2771-0000-500_defconfig | 4 ++--
+ configs/p3450-0000_defconfig     | 6 ++----
+ configs/p3450-0002_defconfig     | 4 ++--
+ 5 files changed, 10 insertions(+), 12 deletions(-)
+
+diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
+index c7f4404bba..8d3d41899b 100644
+--- a/configs/p2371-2180_defconfig
++++ b/configs/p2371-2180_defconfig
+@@ -2,8 +2,8 @@ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_NR_DRAM_BANKS=2
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_2180=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2371-2180"
+diff --git a/configs/p2771-0000-000_defconfig b/configs/p2771-0000-000_defconfig
+index 0ca1fdf381..3d38901279 100644
+--- a/configs/p2771-0000-000_defconfig
++++ b/configs/p2771-0000-000_defconfig
+@@ -2,8 +2,8 @@ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_NR_DRAM_BANKS=1026
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-000"
+ CONFIG_OF_BOARD_SETUP=y
+diff --git a/configs/p2771-0000-500_defconfig b/configs/p2771-0000-500_defconfig
+index ca340f1bd7..935e90cbed 100644
+--- a/configs/p2771-0000-500_defconfig
++++ b/configs/p2771-0000-500_defconfig
+@@ -2,8 +2,8 @@ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_NR_DRAM_BANKS=1026
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-500"
+ CONFIG_OF_BOARD_SETUP=y
+diff --git a/configs/p3450-0000_defconfig b/configs/p3450-0000_defconfig
+index 06588763f9..fa95b15d35 100644
+--- a/configs/p3450-0000_defconfig
++++ b/configs/p3450-0000_defconfig
+@@ -2,8 +2,8 @@ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_NR_DRAM_BANKS=2
+-CONFIG_ENV_SIZE=0x2000
+-CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_ENV_SECT_SIZE=0x1000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P3450_0000=y
+@@ -58,5 +58,3 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
+-CONFIG_POSITION_INDEPENDENT=y
+-CONFIG_DISABLE_SDMMC1_EARLY=y
+diff --git a/configs/p3450-0002_defconfig b/configs/p3450-0002_defconfig
+index 5e2d93c117..92c4d6ee65 100644
+--- a/configs/p3450-0002_defconfig
++++ b/configs/p3450-0002_defconfig
+@@ -5,6 +5,8 @@ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P3450_0000=y
+ CONFIG_P3450_EMMC=y
+ CONFIG_NR_DRAM_BANKS=2
++CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_OF_SYSTEM_SETUP=y
+ CONFIG_OF_BOARD_SETUP=y
+ CONFIG_CONSOLE_MUX=y
+@@ -50,7 +52,5 @@ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
+ CONFIG_ENV_IS_IN_MMC=y
+-CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_SECT_SIZE=0x1000
+-CONFIG_ENV_OFFSET=0xFFFFE000
+ CONFIG_BOOTP_PREFER_SERVERIP=y
+-- 
+2.25.1
+

@@ -1,0 +1,65 @@
+From c2bba4b8c458baa20816e5a66c15a782b5f0509e Mon Sep 17 00:00:00 2001
+From: Tom Warren <twarren@nvidia.com>
+Date: Thu, 11 Apr 2019 15:45:20 -0700
+Subject: [PATCH] ARM: tegra186: Add fdt_copy_env_node/_prop env variables
+
+To support use of a kernel DTB from the rootfs, we will use the
+fdt_copy_ env vars to merge those nodes/properties from the DTB
+CBoot has placed in RAM, into the user's kernel DTB from disk.
+
+These two environment variables are filled in with a specific set
+of nodes and properties called out in an L4T doc that describes
+the specific ABI that protects them from modification or change
+at the bootloader & kernel level. They are added to the user's
+kernel DTB before handing it off to the L4T kernel on boot.
+
+Bug 200509239
+
+Change-Id: Ic4d3d4feb674690a87740ea25473f96003c0b5bd
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Reviewed-on: https://git-master.nvidia.com/r/2095701
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+GVS: Gerrit_Virtual_Submit
+Reviewed-by: mobile promotions <svcmobile_promotions@nvidia.com>
+Tested-by: mobile promotions <svcmobile_promotions@nvidia.com>
+---
+ include/configs/tegra186-common.h | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/include/configs/tegra186-common.h b/include/configs/tegra186-common.h
+index d5f21e0907..879dd98032 100644
+--- a/include/configs/tegra186-common.h
++++ b/include/configs/tegra186-common.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /*
+- * Copyright 2013-2016, NVIDIA CORPORATION.
++ * Copyright 2013-2019, NVIDIA CORPORATION.
+  */
+ 
+ #ifndef _TEGRA186_COMMON_H_
+@@ -56,6 +56,20 @@
+ 	"pxefile_addr_r=0x90100000\0" \
+ 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+ 	"fdt_addr_r=0x82000000\0" \
+-	"ramdisk_addr_r=0x82100000\0"
++	"ramdisk_addr_r=0x82100000\0" \
++	"fdt_copy_node_paths=" \
++		"/chosen/plugin-manager:" \
++		"/chosen/reset:" \
++		"/memory@80000000\0" \
++	"fdt_copy_prop_paths=" \
++		"/bpmp/carveout-start:" \
++		"/bpmp/carveout-size:" \
++		"/chosen/nvidia,bluetooth-mac:" \
++		"/chosen/nvidia,ether-mac:" \
++		"/chosen/nvidia,wifi-mac:" \
++		"/chosen/ecid:" \
++		"/chosen/linux,initrd-start:" \
++		"/chosen/linux,initrd-end:" \
++		"/serial-number\0"
+ 
+ #endif
+-- 
+2.25.1
+

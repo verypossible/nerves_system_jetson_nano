@@ -1,0 +1,81 @@
+From 26e61244e66006ad8f10363d215cd50fed9121d8 Mon Sep 17 00:00:00 2001
+From: Tom Warren <twarren@nvidia.com>
+Date: Tue, 3 Dec 2019 14:27:00 -0700
+Subject: [PATCH] t210: QSPI: Add timeout for xfer_status loop read
+
+On SKU2 Nano, there is no QSPI chip. When the driver reads the
+xfer_status register waiting for data, it never sets RDY, and hangs.
+WAR is to add a check of the timeout in qspi_xfer when we're reading the
+xfer_status register, and abort the xfer when RDY never gets set. On
+SKU2 Nano, this results in a warning during boot to the effect of: 'SF:
+Failed to get idcodes' and 'using default environment'. On SKU0 Nano
+(with QSPI as the boot device), we won't see any warning, and the env is
+fetched/saved OK.
+
+To allow SKU2 to save the environment on eMMC, we'll need to move to
+separate U-Boot per-SKU builds in the future.
+
+Bug 200568277
+
+Change-Id: If3104728f0fea00799152933afad901359b721ac
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Reviewed-on: https://git-master.nvidia.com/r/2254585
+Tested-by: Wei Ni <wni@nvidia.com>
+GVS: Gerrit_Virtual_Submit
+Reviewed-by: Jimmy Zhang <jimmzhang@nvidia.com>
+Reviewed-by: mobile promotions <svcmobile_promotions@nvidia.com>
+Tested-by: mobile promotions <svcmobile_promotions@nvidia.com>
+---
+ drivers/spi/tegra210_qspi.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/spi/tegra210_qspi.c b/drivers/spi/tegra210_qspi.c
+index ae16b45dcb..accd73608b 100644
+--- a/drivers/spi/tegra210_qspi.c
++++ b/drivers/spi/tegra210_qspi.c
+@@ -315,12 +315,21 @@ static int tegra210_qspi_xfer(struct udevice *dev, unsigned int bitlen,
+ 		 * Wait for SPI transmit FIFO to empty, or to time out.
+ 		 * The RX FIFO status will be read and cleared last
+ 		 */
+-		for (tm = 0; tm < QSPI_TIMEOUT; ++tm) {
++		for (tm = 0; tm <= QSPI_TIMEOUT; ++tm) {
+ 			u32 fifo_status, xfer_status;
+ 
+ 			xfer_status = readl(&regs->xfer_status);
+-			if (!(xfer_status & QSPI_XFER_STS_RDY))
+-				continue;
++			if (!(xfer_status & QSPI_XFER_STS_RDY)) {
++				debug("%s: xfer_status = 0x%08X, tm = %d\n", __func__, xfer_status, tm);
++				if (tm >= QSPI_TIMEOUT) {
++					debug("%s: TIMED OUT WAITING ON RDY!\n", __func__);
++					ret = tm;
++					goto done;
++				} else {
++					debug("%s: tm = %d, continuing for loop ...\n", __func__, tm);
++					continue;
++				}
++			}
+ 
+ 			fifo_status = readl(&regs->fifo_status);
+ 			if (fifo_status & QSPI_FIFO_STS_ERR) {
+@@ -362,7 +371,7 @@ static int tegra210_qspi_xfer(struct udevice *dev, unsigned int bitlen,
+ 		/* clear ACK RDY, etc. bits */
+ 		writel(readl(&regs->fifo_status), &regs->fifo_status);
+ 	}
+-
++done:
+ 	if (flags & SPI_XFER_END)
+ 		spi_cs_deactivate(dev);
+ 
+@@ -370,7 +379,7 @@ static int tegra210_qspi_xfer(struct udevice *dev, unsigned int bitlen,
+ 	      __func__, tmpdin, readl(&regs->fifo_status));
+ 
+ 	if (ret) {
+-		printf("%s: timeout during SPI transfer, tm %d\n",
++		debug("%s: timeout during SPI transfer, tm %d\n",
+ 		       __func__, ret);
+ 		return -1;
+ 	}
+-- 
+2.25.1
+

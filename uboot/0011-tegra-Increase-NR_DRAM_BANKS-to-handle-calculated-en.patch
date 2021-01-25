@@ -1,0 +1,148 @@
+From d85f04a7679ecd8c5a0cb8a1abd24547006a0bab Mon Sep 17 00:00:00 2001
+From: Matt Madison <matt@madison.systems>
+Date: Wed, 29 Jul 2020 04:37:51 -0700
+Subject: [PATCH] tegra: Increase NR_DRAM_BANKS to handle calculated env vars
+
+The number of RAM banks needs to be sufficient to handle splitting any
+existing regions when doing the allocation for the calculated
+environment variables.  We're using a baseline of 3 banks, with an extra
+2 banks for each memory region that is dynamically calculated, plus some
+padding, so 16 for all but T186 (it has need for additional banks due to
+ECC bad page handling, so 1024+3+16 on that platform).
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+---
+ configs/e2220-1170_defconfig     | 2 +-
+ configs/p2371-0000_defconfig     | 2 +-
+ configs/p2371-2180_defconfig     | 2 +-
+ configs/p2571_defconfig          | 2 +-
+ configs/p2771-0000-000_defconfig | 2 +-
+ configs/p2771-0000-500_defconfig | 2 +-
+ configs/p3450-0000_defconfig     | 2 +-
+ configs/p3450-0002_defconfig     | 2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/configs/e2220-1170_defconfig b/configs/e2220-1170_defconfig
+index efe3f8b574..1e211fd104 100644
+--- a/configs/e2220-1170_defconfig
++++ b/configs/e2220-1170_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_TEGRA210=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-e2220-1170"
+ CONFIG_OF_SYSTEM_SETUP=y
+diff --git a/configs/p2371-0000_defconfig b/configs/p2371-0000_defconfig
+index 16f6b68e57..69e724ee58 100644
+--- a/configs/p2371-0000_defconfig
++++ b/configs/p2371-0000_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_0000=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2371-0000"
+diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
+index 8d3d41899b..5f422281d2 100644
+--- a/configs/p2371-2180_defconfig
++++ b/configs/p2371-2180_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x8000
+ CONFIG_ENV_OFFSET=0x3D8000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_2180=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2371-2180"
+diff --git a/configs/p2571_defconfig b/configs/p2571_defconfig
+index 9730340967..894fb7c92e 100644
+--- a/configs/p2571_defconfig
++++ b/configs/p2571_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x2000
+ CONFIG_ENV_OFFSET=0xFFFFE000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2571=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2571"
+diff --git a/configs/p2771-0000-000_defconfig b/configs/p2771-0000-000_defconfig
+index 3d38901279..9335764579 100644
+--- a/configs/p2771-0000-000_defconfig
++++ b/configs/p2771-0000-000_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=1026
+ CONFIG_ENV_SIZE=0x8000
+ CONFIG_ENV_OFFSET=0x3D8000
++CONFIG_NR_DRAM_BANKS=1043
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-000"
+ CONFIG_OF_BOARD_SETUP=y
+diff --git a/configs/p2771-0000-500_defconfig b/configs/p2771-0000-500_defconfig
+index 935e90cbed..7c64d810d6 100644
+--- a/configs/p2771-0000-500_defconfig
++++ b/configs/p2771-0000-500_defconfig
+@@ -1,9 +1,9 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=1026
+ CONFIG_ENV_SIZE=0x8000
+ CONFIG_ENV_OFFSET=0x3D8000
++CONFIG_NR_DRAM_BANKS=1043
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-500"
+ CONFIG_OF_BOARD_SETUP=y
+diff --git a/configs/p3450-0000_defconfig b/configs/p3450-0000_defconfig
+index fa95b15d35..31892ad22d 100644
+--- a/configs/p3450-0000_defconfig
++++ b/configs/p3450-0000_defconfig
+@@ -1,10 +1,10 @@
+ CONFIG_ARM=y
+ CONFIG_ARCH_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80080000
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x8000
+ CONFIG_ENV_OFFSET=0x3D8000
+ CONFIG_ENV_SECT_SIZE=0x1000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P3450_0000=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p3450-0000"
+diff --git a/configs/p3450-0002_defconfig b/configs/p3450-0002_defconfig
+index 92c4d6ee65..088ac3200f 100644
+--- a/configs/p3450-0002_defconfig
++++ b/configs/p3450-0002_defconfig
+@@ -4,9 +4,9 @@ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P3450_0000=y
+ CONFIG_P3450_EMMC=y
+-CONFIG_NR_DRAM_BANKS=2
+ CONFIG_ENV_SIZE=0x8000
+ CONFIG_ENV_OFFSET=0x3D8000
++CONFIG_NR_DRAM_BANKS=16
+ CONFIG_OF_SYSTEM_SETUP=y
+ CONFIG_OF_BOARD_SETUP=y
+ CONFIG_CONSOLE_MUX=y
+-- 
+2.25.1
+

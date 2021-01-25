@@ -1,0 +1,244 @@
+From 1e26304ac60e3bbaef07945f405dfbba66700344 Mon Sep 17 00:00:00 2001
+From: Tom Warren <twarren@nvidia.com>
+Date: Tue, 13 Jun 2017 10:08:54 -0700
+Subject: [PATCH] Tegra210: Restore DT delete code & env variables
+
+In commit aeff514b7876b2791ab9b2b61a6d024e7269d904, I removed both the copy
+and delete fdt code. It has now become apparent that the fdt_del_prop code
+is still needed due to commit 95976c7, which prevents the kernel from
+duplicating pinmux config.
+
+This is basically a revert of aeff514b, and then the removal of just the
+fdt_copy_prop/path code/vars, plus any T186 impact, since it didn't do any
+fdt_del.
+
+Bug 1858109
+
+Change-Id: I3d69d0746382ffd2ea58078e5df3c822a10a3e3d
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Reviewed-on: http://git-master/r/1501706
+---
+ arch/arm/mach-tegra/Makefile      |   1 +
+ arch/arm/mach-tegra/dt-edit.c     | 121 ++++++++++++++++++++++++++++++
+ arch/arm/mach-tegra/dt-edit.h     |   8 ++
+ arch/arm/mach-tegra/dt-setup.c    |   4 +
+ configs/p3450-0000_defconfig      |   2 +
+ configs/p3450-0002_defconfig      |   1 -
+ include/configs/tegra210-common.h |   3 +-
+ 7 files changed, 138 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm/mach-tegra/dt-edit.c
+ create mode 100644 arch/arm/mach-tegra/dt-edit.h
+
+diff --git a/arch/arm/mach-tegra/Makefile b/arch/arm/mach-tegra/Makefile
+index 7165d70a60..4c107ec150 100644
+--- a/arch/arm/mach-tegra/Makefile
++++ b/arch/arm/mach-tegra/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_TEGRA_PMC) += powergate.o
+ obj-y += xusb-padctl-dummy.o
+ 
+ obj-$(CONFIG_ARM64) += arm64-mmu.o cboot.o
++obj-y += dt-edit.o
+ obj-y += dt-setup.o
+ obj-$(CONFIG_TEGRA_CLOCK_SCALING) += emc.o
+ obj-$(CONFIG_TEGRA_GPU) += gpu.o
+diff --git a/arch/arm/mach-tegra/dt-edit.c b/arch/arm/mach-tegra/dt-edit.c
+new file mode 100644
+index 0000000000..8e7176bbaf
+--- /dev/null
++++ b/arch/arm/mach-tegra/dt-edit.c
+@@ -0,0 +1,121 @@
++/*
++ *  Copyright (C) 2010-2017 NVIDIA CORPORATION.
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#define LOG_CATEGORY LOGC_ARCH
++#include <stdlib.h>
++#include <common.h>
++#include <fdt_support.h>
++#include <log.h>
++#include <fdtdec.h>
++#include <env.h>
++#include "dt-edit.h"
++
++typedef int iter_envitem(void *blob_dst, char *item, void *param);
++
++static iter_envitem fdt_iter_del_node;
++static int fdt_iter_del_node(void *blob_dst, char *node_path, void *unused_param)
++{
++	int ofs;
++
++	ofs = fdt_path_offset(blob_dst, node_path);
++	/* Node doesn't exist -> property can't exist -> it's removed! */
++	if (ofs == -FDT_ERR_NOTFOUND)
++		return 0;
++	if (ofs < 0) {
++		error("DT node %s lookup failure; can't del node\n", node_path);
++		return ofs;
++	}
++
++	return fdt_del_node(blob_dst, ofs);
++}
++
++static iter_envitem fdt_iter_del_prop;
++static int fdt_iter_del_prop(void *blob_dst, char *prop_path, void *unused_param)
++{
++	char *prop_name, *node_path;
++	int ofs, ret;
++
++	prop_name = strrchr(prop_path, '/');
++	if (!prop_name) {
++		error("Can't del prop %s; missing /", prop_path);
++		return -1;
++	}
++	*prop_name = 0;
++	prop_name++;
++	node_path = prop_path;
++
++	if (*node_path) {
++		ofs = fdt_path_offset(blob_dst, node_path);
++		/* Node doesn't exist -> property can't exist -> it's removed! */
++		if (ofs == -FDT_ERR_NOTFOUND)
++			return 0;
++		if (ofs < 0) {
++			error("DT node %s lookup failure; can't del prop %s\n",
++			      node_path, prop_name);
++			return ofs;
++		}
++	} else {
++		ofs = 0;
++	}
++
++	ret = fdt_delprop(blob_dst, ofs, prop_name);
++	/* Property doesn't exist -> it's already removed! */
++	if (ret == -FDT_ERR_NOTFOUND)
++		return 0;
++	return ret;
++}
++
++static int fdt_iter_envlist(iter_envitem *func, void *blob_dst, const char *env_varname, void *param)
++{
++	char *items, *tmp, *item;
++	int ret;
++
++	items = getenv(env_varname);
++	if (!items) {
++		log_debug("%s: No env var %s\n", __func__, env_varname);
++		return 0;
++	}
++
++	items = strdup(items);
++	if (!items) {
++		error("strdup(%s) failed", env_varname);
++		return -1;
++	}
++
++	tmp = items;
++	while (true) {
++		item = strsep(&tmp, ":");
++		if (!item)
++			break;
++		log_debug("%s: item: %s\n", __func__, item);
++		ret = func(blob_dst, item, param);
++		if (ret < 0) {
++			ret = -1;
++			goto out;
++		}
++	}
++
++	ret = 0;
++
++out:
++	free(items);
++
++	return ret;
++}
++
++int fdt_del_env_nodelist(void *blob_dst)
++{
++	log_debug("%s:\n", __func__);
++
++	return fdt_iter_envlist(fdt_iter_del_node, blob_dst, "fdt_del_node_paths", NULL);
++}
++
++int fdt_del_env_proplist(void *blob_dst)
++{
++	log_debug("%s:\n", __func__);
++
++	return fdt_iter_envlist(fdt_iter_del_prop, blob_dst, "fdt_del_prop_paths", NULL);
++}
+diff --git a/arch/arm/mach-tegra/dt-edit.h b/arch/arm/mach-tegra/dt-edit.h
+new file mode 100644
+index 0000000000..441a50f17a
+--- /dev/null
++++ b/arch/arm/mach-tegra/dt-edit.h
+@@ -0,0 +1,8 @@
++/*
++ *  Copyright (C) 2010-2017 NVIDIA CORPORATION.
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++int fdt_del_env_nodelist(void *blob_dst);
++int fdt_del_env_proplist(void *blob_dst);
+diff --git a/arch/arm/mach-tegra/dt-setup.c b/arch/arm/mach-tegra/dt-setup.c
+index 602b20e6b7..06dee0146d 100644
+--- a/arch/arm/mach-tegra/dt-setup.c
++++ b/arch/arm/mach-tegra/dt-setup.c
+@@ -5,6 +5,7 @@
+ 
+ #include <common.h>
+ #include <asm/arch-tegra/gpu.h>
++#include "dt-edit.h"
+ 
+ /*
+  * This function is called right before the kernel is booted. "blob" is the
+@@ -29,5 +30,8 @@ int ft_system_setup(void *blob, struct bd_info *bd)
+ 			return ret;
+ 	}
+ 
++  fdt_del_env_nodelist(blob);
++  fdt_del_env_proplist(blob);
++
+ 	return 0;
+ }
+diff --git a/configs/p3450-0000_defconfig b/configs/p3450-0000_defconfig
+index 6e6a8133b4..06588763f9 100644
+--- a/configs/p3450-0000_defconfig
++++ b/configs/p3450-0000_defconfig
+@@ -58,3 +58,5 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
++CONFIG_POSITION_INDEPENDENT=y
++CONFIG_DISABLE_SDMMC1_EARLY=y
+diff --git a/configs/p3450-0002_defconfig b/configs/p3450-0002_defconfig
+index f8186cacef..5e2d93c117 100644
+--- a/configs/p3450-0002_defconfig
++++ b/configs/p3450-0002_defconfig
+@@ -17,7 +17,6 @@ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_I2C=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_PCI=y
+-CONFIG_CMD_SF=y
+ CONFIG_CMD_SPI=y
+ CONFIG_CMD_USB=y
+ CONFIG_CMD_USB_MASS_STORAGE=y
+diff --git a/include/configs/tegra210-common.h b/include/configs/tegra210-common.h
+index 2226effe16..b9d5eb8376 100644
+--- a/include/configs/tegra210-common.h
++++ b/include/configs/tegra210-common.h
+@@ -48,7 +48,8 @@
+ 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
+ 	"fdtfile=" FDTFILE "\0" \
+ 	"fdt_addr_r=0x83000000\0" \
+-	"ramdisk_addr_r=0x83200000\0"
++	"ramdisk_addr_r=0x83200000\0" \
++  "fdt_del_prop_paths=/pinmux@700008d4/pinctrl-names\0"
+ 
+ /* For USB EHCI controller */
+ #define CONFIG_EHCI_IS_TDI
+-- 
+2.25.1
+
