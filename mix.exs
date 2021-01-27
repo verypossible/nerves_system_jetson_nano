@@ -44,7 +44,6 @@ defmodule NervesSystemJetsonNano.MixProject do
       artifact_sites: [
         {:github_releases, "#{@github_organization}/#{@app}"}
       ],
-      build_runner_opts: build_runner_opts(),
       platform: Nerves.System.BR,
       platform_config: [
         defconfig: "nerves_defconfig"
@@ -114,13 +113,6 @@ defmodule NervesSystemJetsonNano.MixProject do
   # Copy the images referenced by docs, since ex_doc doesn't do this.
   defp copy_images(_) do
     File.cp_r("assets", "doc/assets")
-  end
-
-  defp build_runner_opts() do
-    case System.get_env("BR2_PRIMARY_SITE") do
-      nil -> []
-      primary_site -> [make_args: ["BR2_PRIMARY_SITE=#{primary_site}"]]
-    end
   end
 
   defp set_target() do
