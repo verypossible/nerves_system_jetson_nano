@@ -8,6 +8,7 @@ This is the base Nerves System configuration for the [Jetson Nano Developer kit]
 | Feature              | Description                     |
 | -------------------- | ------------------------------- |
 | CPU                  | Quad-core ARM A57 @ 1.43 GHz    |
+| GPU                  | 128-core NVIDIA Maxwell™        |
 | Memory               | 4 GB 64-bit LPDDR4 25.6 GB/s    |
 | Storage              | MicroSD                         |
 | Linux kernel         | 4.9.140 w/ OE4T patches         |
@@ -15,10 +16,9 @@ This is the base Nerves System configuration for the [Jetson Nano Developer kit]
 | GPIO, I2C, SPI       | Yes - [Elixir Circuits](https://github.com/elixir-circuits) |
 | UART                 | ttyS0 + more via device tree overlay |
 | Camera               | MIPI CSI-2 x2 (15-position Flex Connector) |
-| Ethernet             | Yes                             |
+| Ethernet             | Gigabit Ethernet                |
 | WiFi                 | M.2 Key-E with PCIe x1          |
 | USB                  | 4x USB 3.0 A (Host) - USB 2.0 Micro B (Device) |
-| HW Watchdog          | AM335x watchdog enabled on boot. Be sure to enable `heart` in your vm.args or the device will reboot |
 
 ## Known issues
 
