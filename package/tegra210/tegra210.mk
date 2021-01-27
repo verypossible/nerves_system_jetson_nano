@@ -132,7 +132,6 @@ define TEGRA210_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 0644 -D $(@D)/bootloader/tegra210-p3448-0000-p3449-0000-b00.dtb \
 		$(TARGET_DIR)/boot/tegra210-p3448-0000-p3449-0000-b00.dtb
 	dpkg-deb -x $(@D)/nv_tegra/l4t_deb_packages/nvidia-l4t-xusb-firmware_32.5.0-20210115145440_arm64.deb $(TARGET_DIR)
-	dpkg-deb -x $(@D)/nv_tegra/l4t_deb_packages/nvidia-l4t-jetson-io_32.5.0-20210115145440_arm64.deb $(TARGET_DIR)
 	dpkg-deb -x $(@D)/nv_tegra/l4t_deb_packages/nvidia-l4t-cuda_32.5.0-20210115145440_arm64.deb $(TARGET_DIR)
 	dpkg-deb -x $(@D)/nv_tegra/l4t_deb_packages/nvidia-l4t-firmware_32.5.0-20210115145440_arm64.deb $(TARGET_DIR)
 	dpkg-deb -x $(@D)/nv_tegra/l4t_deb_packages/nvidia-l4t-core_32.5.0-20210115145440_arm64.deb $(TARGET_DIR)
