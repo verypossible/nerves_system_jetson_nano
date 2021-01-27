@@ -2,7 +2,7 @@
 
 This is the base Nerves System configuration for the [Jetson Nano Developer kit](https://developer.nvidia.com/embedded/jetson-nano-developer-kit).
 
-![etson Nano Developer kit image](assets/images/jetson_nano_devkit.jpg)
+![Jetson Nano Developer kit image](assets/images/jetson_nano_devkit.jpg)
 <br><sup>[Image credit](#nvidia)</sup>
 
 | Feature              | Description                     |
@@ -19,6 +19,20 @@ This is the base Nerves System configuration for the [Jetson Nano Developer kit]
 | WiFi                 | M.2 Key-E with PCIe x1          |
 | USB                  | 4x USB 3.0 A (Host) - USB 2.0 Micro B (Device) |
 | HW Watchdog          | AM335x watchdog enabled on boot. Be sure to enable `heart` in your vm.args or the device will reboot |
+
+## Known issues
+
+This system is under development. Components of the system may change without
+upgrade paths until the partition structure and included helper libraries are
+added. It is also unclear what will be required in the system to support
+cross compiling for CUDA and the inclusions are subject to change. Other
+quirks and known issues are:
+
+* Reboot sometimes hangs when rebooting too soon after boot.
+  It seems to be associated with `sdhci-tegra`.
+  When the reboot hangs, eventually the message
+  `sdhci-tegra sdhci-tegra.0: Tuning done` will be seen and the system will
+  reboot.
 
 ## Using
 
