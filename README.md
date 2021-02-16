@@ -33,11 +33,29 @@ quirks and known issues are:
   When the reboot hangs, eventually the message
   `sdhci-tegra sdhci-tegra.0: Tuning done` will be seen and the system will
   reboot.
+* Booting with a display attached results in a white screen and a kernel panic.
 
 ## Using
 
+### Powering the carrier board
+
+The Jetson has the ability to be powered from USB or from the 5V DC Barrel jack,
+however, it is highly recommended to power the board using the 5V DC barrel jack.
+Powering the board from USB yields unreliable results.
+
+### Adding the system to your project
+
 The most common way of using this Nerves System is create a project with `mix
-nerves.new` and to export `MIX_TARGET=jetson_nano`. See the [Getting started
+nerves.new`, add `:jetson_nano` to the `@all_targets` list at the top of the
+mix.exs file, and add the system to the deps:
+
+```elixir
+{:nerves_system_jetson_nano, "~> 0.1", runtime: false, targets: :jetson_nano}
+```
+
+Finally, you can export the Mix target and `MIX_TARGET=jetson_nano`.
+
+See the [Getting started
 guide](https://hexdocs.pm/nerves/getting-started.html#creating-a-new-nerves-app)
 for more information.
 
